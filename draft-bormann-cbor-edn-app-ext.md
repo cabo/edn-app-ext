@@ -14,9 +14,9 @@ stream: IETF
 consensus: true
 
 venue:
-  mail: cbor@ietf.org
-  github: cabo/edn-app-ext
-  latest: "https://cabo.github.io/edn-app-ext/"
+  mail: "cbor@ietf.org"
+  github: "cabo/edn-app-ext"
+  latest: "https://cabo.github.io/edn-app-ext/draft-bormann-cbor-edn-app-ext.html"
 
 author:
   -
