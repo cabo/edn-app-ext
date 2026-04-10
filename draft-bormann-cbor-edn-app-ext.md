@@ -1,90 +1,229 @@
 ---
-###
-# Internet-Draft Markdown Template
-#
-# Rename this file from draft-todo-yourname-protocol.md to get started.
-# Draft name format is "draft-<yourname>-<workgroup>-<name>.md".
-#
-# For initial setup, you only need to edit the first block of fields.
-# Only "title" needs to be changed; delete "abbrev" if your title is short.
-# Any other content can be edited, but be careful not to introduce errors.
-# Some fields will be set automatically during setup if they are unchanged.
-#
-# Don't include "-00" or "-latest" in the filename.
-# Labels in the form draft-<yourname>-<workgroup>-<name>-latest are used by
-# the tools to refer to the current version; see "docname" for example.
-#
-# This template uses kramdown-rfc: https://github.com/cabo/kramdown-rfc
-# You can replace the entire file if you prefer a different format.
-# Change the file extension to match the format (.xml for XML, etc...)
-#
-###
-title: "TODO - Your title"
-abbrev: "TODO - Abbreviation"
-category: info
+title: >
+  Additional
+  Application Extensions for the CBOR Extended Diagnostic Notation (EDN)
+abbrev: EDN Application Extensions
+docname: draft-bormann-cbor-edn-app-ext-latest
+# date: 2026-04-10
 
-docname: draft-todo-yourname-protocol-latest
-submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
-number:
-date:
-consensus: true
 v: 3
-area: AREA
-workgroup: WG Working Group
-keyword:
- - next generation
- - unicorn
- - sparkling distributed ledger
+
+keyword: Internet-Draft
+cat: std
+stream: IETF
+consensus: true
+
 venue:
-  group: WG
-  type: Working Group
-  mail: WG@example.com
-  arch: https://example.com/WG
-  github: USER/REPO
-  latest: https://example.com/LATEST
+  mail: cbor@ietf.org
+  github: cabo/edn-app-ext
+  latest: "https://cabo.github.io/edn-app-ext/"
 
 author:
- -
-    fullname: Your Name Here
-    organization: Your Organization Here
-    email: your.email@example.com
+  -
+    name: Carsten Bormann
+    org: Universität Bremen TZI
+    street: Postfach 330440
+    city: Bremen
+    code: D-28359
+    country: Germany
+    phone: +49-421-218-63921
+    email: cabo@tzi.org
 
 normative:
-
+  I-D.ietf-cbor-edn-literals: edn
+  IANA.cbor-diagnostic-notation: iana-edn
+  STD68: abnf # RFC5234
+  RFC7405: abnf2
+  RFC4648: base
+  I-D.josefsson-rfc4648bis: basebis
+  RFC9285: base45
+  RFC9741: more
+  IEEE754:
+    target: https://ieeexplore.ieee.org/document/8766229
+    title: IEEE Standard for Floating-Point Arithmetic
+    author:
+    - org: IEEE
+    date: false
+    seriesinfo:
+      IEEE Std: 754-2019
+      DOI: 10.1109/IEEESTD.2019.8766229
 informative:
-
-...
 
 --- abstract
 
-TODO Abstract
+The CBOR Extended Diagnostic Notation (EDN), to be standardized in
+draft-ietf-cbor-edn-literals,
+provides "application extensions" as its main language extension point.
 
+A number of application extensions are already defined in
+draft-ietf-cbor-edn-literals itself and in draft-ietf-cbor-edn-e-ref.
+The present document defines a number of additional application
+extensions that have been batched up as a next step after completing
+these specifications.
+([^chore] Briefly List extensions.)
+
+[^status]
+
+[^status]: This -00 of an individual submission shows the approximate
+    shape the first "batch" of application extensions could have, plus
+    a number of registrations that could go into this batch.
+    The latter provides a basis for a technical discussion of those
+    registrations.
 
 --- middle
 
-# Introduction
+Introduction        {#intro}
+============
 
-TODO Introduction
+(See abstract.)
 
+| Name             | Purpose                                                                                            |
+| same             | Multiple literals for the same item, to be checked against each other                              |
+| bytes            | Reinterpret text string as byte string                                                             |
+| float            | Provide IEEE754-oriented literals for more floating point values                                   |
+| tbd b32/h32/c32? | Create byte string from base32 representation, possibly beyond the two variants defined in {{-base}} |
+| tbd b45          | Create byte string from base45 representation {{-base45}} |
+{: #tbl-new title="Additional EDN application extensions defined in this document"}
 
-# Conventions and Definitions
+[^discuss] We should also add application extensions for text
+generation from bytes, such as b64c and b64u, along the lines of {{-more}}.
 
-{::boilerplate bcp14-tagged}
+Conventions and Terminology
+-----------
 
+This specification uses terminology from {{-edn}}.
+In particular, with respect to control operators, "target" refers to
+the left-hand side operand, and "controller" to the right-hand side operand.
+"Tool" refers to tools that produce, consume, or otherwise process EDN.
+Note also that the data model underlying CBOR provides for text
+strings as well as byte strings as two separate types, which are
+then collectively referred to as "strings".
 
-# Security Considerations
+The term ABNF in this specification stands for the combination of
+{{STD68}} and {{RFC7405}}, i.e., ABNF defined in this document allows use
+of the case-sensitive extensions defined in {{RFC7405}}.
 
-TODO Security
+{::boilerplate bcp14-tagged-bcp14}
 
+Application Extensions
+=================
 
-# IANA Considerations
+## same: multiple literals to be checked against each other
 
-This document has no IANA actions.
+The "`same`" application extension receives a sequence of one or more
+data items and throws an error if these data items are not the same.
 
+Example:
+
+~~~
+$ edn-abnf -afloat,same -e "same<< float'47110815', 37128.08203125, 0x1.22102ap+15 >>"
+37128.08203125
+$ edn-abnf -afloat,same -e "same<< float'47110815', 37128.08203126 >>"
+** cbor-diagnostic: same<<>>: 37128.08203125 not same as 37128.08203126: Argument Error
+$ edn-abnf -asame -e "same<< h'a10101', <<{/alg/ 1: 1 /AES-GCM 128 /}>> >>"
+h'A10101'
+$ edn-abnf -asame -e "same<<1>>" # trivially true
+1
+~~~
+{: post="fold"}
+
+## bytes: Reinterpret text string as byte string
+
+The "`bytes`" application extension receives a sequence of zero or more
+strings (throwing an error if any of these data items are not text or
+byte strings), concatenates their byte content and yields the
+concatenation as a byte string.
+
+Examples:
+
+~~~
+$ edn-abnf -abytes -e 'bytes<<>>'
+h''
+$ edn-abnf -abytes -e 'bytes`text1`'
+h'7465787431'
+$ edn-abnf -abytes -e 'bytes<<"1", "2">>'
+h'3132'
+$ edn-abnf -abytes -e 'bytes<<"ä", h'"'2f'"'>>'
+h'C3A42F'
+$ edn-abnf -abytes -e 'bytes<<"ä", h'"'2f'"'>>' | diag2diag.rb -tu
+'ä/'
+~~~
+{: post="fold"}
+
+## float: IEEE754-oriented literals for more floating point values
+
+The "`float`" application extension enables the notation of 2-byte,
+4-byte, and 8-byte byte strings as hex literals (like the `h`
+application prefix).
+The application-oriented literal is interpreted as an encoded data item
+prefixing the byte string by a single byte 0xF9 (binary16), 0xFA
+(binary32), and 0xFB (binary64), respectively, would be.
+
+Example:
+
+~~~
+$ edn-abnf -afloat -e "[float'fe00', float'47110815']" -tpretty
+82             # array(2)
+   F9 FE00     # primitive(65024)
+   FA 47110815 # primitive(1192298517)
+$ edn-abnf -afloat,same -e "same<< float'47110815', 37128.08203125 >>"
+37128.08203125
+~~~
+{: post="fold"}
+
+## tbd b32/h32/c32?: Create byte string from base32 representation
+
+[^todo] define, possibly beyond the two variants defined in {{-base}}; watch {{-basebis}}.
+
+## tbd b45: Create byte string from base45 representation
+
+[^todo] define based on {{-base45}}
+
+Implementation Status
+=====================
+{: removeinrfc}
+
+<!-- RFC7942 -->
+
+{::boilerplate RFC7942}
+
+## Implementation 1
+
+The "`float`" application extension is implemented in
+[](https://cbor.me) and can be enabled (`–‍afloat`) in the cbor
+diagnostic tools (`cbor-diag` gem) and the `edn-abnf` gem.\\
+At the time of writing, the "`same`" and "`bytes`" application
+extensions  (`–‍asame`,  `–‍abytes`) are only available in the gems.
+
+## Implementation 2
+
+The `float` application extension is implemented in the JavaScript
+tools that come with the CBOR test vectors project [](https://github.com/cbor-wg/cbor-test-vectors/blob/main/check/files.test.js).
+
+Security considerations
+=======================
+
+The security considerations of {{-edn}} apply.
+
+[^todo] List any specific security considerations that apply to
+specific application extensions.
+
+IANA considerations
+===================
+
+[^todo]
 
 --- back
 
-# Acknowledgments
-{:numbered="false"}
+Acknowledgements
+================
+{: unnumbered}
 
-TODO acknowledge.
+
+[^note]: Note:
+[^chore]: Chore:
+[^todo]: TO BE DONE:
+[^issue]: Open issue:
+[^rfced]: RFC Editor:
+
+[^discuss]: Discuss:
