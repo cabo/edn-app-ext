@@ -9,6 +9,7 @@ This is the working area for the individual Internet-Draft, "Additional Applicat
 * [Individual Draft](https://datatracker.ietf.org/doc/html/draft-bormann-cbor-edn-app-ext)
 * [Compare Editor's Copy to Individual Draft](https://cabo.github.io/edn-app-ext/#go.draft-bormann-cbor-edn-app-ext.diff)
 
+[Access all Branches](https://cabo.github.io/edn-app-ext)
 
 ## Contributing
 
