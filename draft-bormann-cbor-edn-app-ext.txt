@@ -4,8 +4,8 @@
 
 Network Working Group                                         C. Bormann
 Internet-Draft                                    Universität Bremen TZI
-Intended status: Standards Track                           10 April 2026
-Expires: 12 October 2026
+Intended status: Standards Track                           15 April 2026
+Expires: 17 October 2026
 
 
    Additional Application Extensions for the CBOR Extended Diagnostic
@@ -53,7 +53,7 @@ About This Document
 
 
 
-Bormann                  Expires 12 October 2026                [Page 1]
+Bormann                  Expires 17 October 2026                [Page 1]
 
 Internet-Draft         EDN Application Extensions             April 2026
 
@@ -73,7 +73,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 12 October 2026.
+   This Internet-Draft will expire on 17 October 2026.
 
 Copyright Notice
 
@@ -96,30 +96,30 @@ Table of Contents
    2.  Application Extensions  . . . . . . . . . . . . . . . . . . .   4
      2.1.  same: multiple literals to be checked against each
            other . . . . . . . . . . . . . . . . . . . . . . . . . .   4
-     2.2.  bytes: Reinterpret text string as byte string . . . . . .   4
+     2.2.  bytes: Reinterpret text string as byte string . . . . . .   5
      2.3.  float: IEEE754-oriented literals for more floating point
            values  . . . . . . . . . . . . . . . . . . . . . . . . .   5
      2.4.  tbd b32/h32/c32?: Create byte string from base32
-           representation  . . . . . . . . . . . . . . . . . . . . .   5
-     2.5.  tbd b45: Create byte string from base45 representation  .   5
-   3.  Implementation Status . . . . . . . . . . . . . . . . . . . .   5
-     3.1.  Implementation 1  . . . . . . . . . . . . . . . . . . . .   6
-     3.2.  Implementation 2  . . . . . . . . . . . . . . . . . . . .   6
-   4.  Security considerations . . . . . . . . . . . . . . . . . . .   6
+           representation  . . . . . . . . . . . . . . . . . . . . .   6
+     2.5.  tbd b45: Create byte string from base45 representation  .   6
+   3.  Implementation Status . . . . . . . . . . . . . . . . . . . .   6
+     3.1.  Implementation 1  . . . . . . . . . . . . . . . . . . . .   7
+     3.2.  Implementation 2  . . . . . . . . . . . . . . . . . . . .   7
+   4.  Security considerations . . . . . . . . . . . . . . . . . . .   7
 
 
 
-Bormann                  Expires 12 October 2026                [Page 2]
+Bormann                  Expires 17 October 2026                [Page 2]
 
 Internet-Draft         EDN Application Extensions             April 2026
 
 
-   5.  IANA considerations . . . . . . . . . . . . . . . . . . . . .   6
+   5.  IANA considerations . . . . . . . . . . . . . . . . . . . . .   7
    6.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   7
      6.1.  Normative References  . . . . . . . . . . . . . . . . . .   7
-     6.2.  Informative References  . . . . . . . . . . . . . . . . .   8
-   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .   8
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   8
+     6.2.  Informative References  . . . . . . . . . . . . . . . . .   9
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .   9
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   9
 
 1.  Introduction
 
@@ -165,7 +165,7 @@ Internet-Draft         EDN Application Extensions             April 2026
 
 
 
-Bormann                  Expires 12 October 2026                [Page 3]
+Bormann                  Expires 17 October 2026                [Page 3]
 
 Internet-Draft         EDN Application Extensions             April 2026
 
@@ -184,12 +184,47 @@ Internet-Draft         EDN Application Extensions             April 2026
 
 2.  Application Extensions
 
+   A table like Table 6 in [I-D.ietf-cbor-edn-literals]: (Add text.)
+
+   +============+=================================+====================+
+   | app-prefix | content of single-quoted        | result type        |
+   |            | string                          |                    |
+   +============+=================================+====================+
+   | same       | sequence of one or more         | data item          |
+   |            | data items                      |                    |
+   +------------+---------------------------------+--------------------+
+   | SAME       | (not used)                      |                    |
+   +------------+---------------------------------+--------------------+
+   | bytes      | byte or text string(s)          | byte string with   |
+   |            |                                 | concatenated bytes |
+   +------------+---------------------------------+--------------------+
+   | BYTES      | (not used)                      |                    |
+   +------------+---------------------------------+--------------------+
+   | float      | byte string (usually hex-       | floating point     |
+   |            | encoded as text string)         | value              |
+   +------------+---------------------------------+--------------------+
+   | FLOAT      | (not used)                      |                    |
+   +------------+---------------------------------+--------------------+
+
+            Table 2: App-prefix Values Defined in this Document
+
 2.1.  same: multiple literals to be checked against each other
 
    The "same" application extension receives a sequence of one or more
    data items and throws an error if these data items are not the same.
 
    Example:
+
+
+
+
+
+
+
+Bormann                  Expires 17 October 2026                [Page 4]
+
+Internet-Draft         EDN Application Extensions             April 2026
+
 
    =============== NOTE: '\' line wrapping per RFC 8792 ================
 
@@ -215,17 +250,6 @@ Internet-Draft         EDN Application Extensions             April 2026
 
    Examples:
 
-
-
-
-
-
-
-Bormann                  Expires 12 October 2026                [Page 4]
-
-Internet-Draft         EDN Application Extensions             April 2026
-
-
    $ edn-abnf -abytes -e 'bytes<<>>'
    h''
    $ edn-abnf -abytes -e 'bytes`text1`'
@@ -240,11 +264,29 @@ Internet-Draft         EDN Application Extensions             April 2026
 2.3.  float: IEEE754-oriented literals for more floating point values
 
    The "float" application extension enables the notation of 2-byte,
-   4-byte, and 8-byte byte strings as hex literals (like the h
-   application prefix).  The application-oriented literal is interpreted
-   as an encoded data item prefixing the byte string by a single byte
-   0xF9 (binary16), 0xFA (binary32), and 0xFB (binary64), respectively,
-   would be.
+   4-byte, and 8-byte byte strings to express floating point values
+   (mt=7, ai=25/26/27 respectively) by giving their IEEE 754
+   representation.  A text string used as an argument is interpreted
+   exactly as a hex literal (like the h application prefix); the result
+   is used as the byte string.
+
+
+
+
+
+
+
+
+Bormann                  Expires 17 October 2026                [Page 5]
+
+Internet-Draft         EDN Application Extensions             April 2026
+
+
+   The application-oriented literal is interpreted as an encoded data
+   item would be that prefixes the byte string by a single byte 0xF9 (2
+   bytes, i.e., binary16), 0xFA (4 bytes, i.e., binary32), and 0xFB (8
+   bytes, i.e., binary64), respectively.  Byte strings of a different
+   length than 2, 4, or 8 raise an error.
 
    Example:
 
@@ -254,9 +296,17 @@ Internet-Draft         EDN Application Extensions             April 2026
    82             # array(2)
       F9 FE00     # primitive(65024)
       FA 47110815 # primitive(1192298517)
-   $ edn-abnf -afloat,same -e "same<< float'47110815', 37128.08203125 >\
+   $ edn-abnf -afloat,same -e "same<< float'47110815', 0x1.22102ap+15 >\
                                                                       >"
    37128.08203125
+
+   The purpose of this application extension is to close a gap in EDN's
+   [IEEE754] binary64 support: Without this (or a similar) extension
+   there is no way to represent NaN values different from the one called
+   out at the end of Section 4.1 of RFC 8949 [STD94]: "(for many
+   applications, the single NaN encoding 0xf97e00 will suffice)".  For
+   finite floating point numbers, the decimal or hex floating point
+   representations are preferred.
 
 2.4.  tbd b32/h32/c32?: Create byte string from base32 representation
 
@@ -273,15 +323,6 @@ Internet-Draft         EDN Application Extensions             April 2026
 
    This section is to be removed before publishing as an RFC.
 
-
-
-
-
-Bormann                  Expires 12 October 2026                [Page 5]
-
-Internet-Draft         EDN Application Extensions             April 2026
-
-
    This section records the status of known implementations of the
    protocol defined by this specification at the time of posting of this
    Internet-Draft, and is based on a proposal described in [RFC7942].
@@ -289,6 +330,14 @@ Internet-Draft         EDN Application Extensions             April 2026
    assist the IETF in its decision processes in progressing drafts to
    RFCs.  Please note that the listing of any individual implementation
    here does not imply endorsement by the IETF.  Furthermore, no effort
+
+
+
+Bormann                  Expires 17 October 2026                [Page 6]
+
+Internet-Draft         EDN Application Extensions             April 2026
+
+
    has been spent to verify the information presented here that was
    supplied by IETF contributors.  This is not intended as, and must not
    be construed to be, a catalog of available implementations or their
@@ -330,14 +379,6 @@ Internet-Draft         EDN Application Extensions             April 2026
 
    // TO BE DONE:
 
-
-
-
-Bormann                  Expires 12 October 2026                [Page 6]
-
-Internet-Draft         EDN Application Extensions             April 2026
-
-
 6.  References
 
 6.1.  Normative References
@@ -345,6 +386,13 @@ Internet-Draft         EDN Application Extensions             April 2026
    [BCP14]    Best Current Practice 14,
               <https://www.rfc-editor.org/info/bcp14>.
               At the time of writing, this BCP comprises the following:
+
+
+
+Bormann                  Expires 17 October 2026                [Page 7]
+
+Internet-Draft         EDN Application Extensions             April 2026
+
 
               Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -384,16 +432,6 @@ Internet-Draft         EDN Application Extensions             April 2026
               RFC 7405, DOI 10.17487/RFC7405, December 2014,
               <https://www.rfc-editor.org/rfc/rfc7405>.
 
-
-
-
-
-
-Bormann                  Expires 12 October 2026                [Page 7]
-
-Internet-Draft         EDN Application Extensions             April 2026
-
-
    [RFC9285]  Fältström, P., Ljunggren, F., and D.W. van Gulik, "The
               Base45 Data Encoding", RFC 9285, DOI 10.17487/RFC9285,
               August 2022, <https://www.rfc-editor.org/rfc/rfc9285>.
@@ -403,6 +441,15 @@ Internet-Draft         EDN Application Extensions             April 2026
               Processing of Text", RFC 9741, DOI 10.17487/RFC9741, March
               2025, <https://www.rfc-editor.org/rfc/rfc9741>.
 
+
+
+
+
+Bormann                  Expires 17 October 2026                [Page 8]
+
+Internet-Draft         EDN Application Extensions             April 2026
+
+
    [STD68]    Internet Standard 68,
               <https://www.rfc-editor.org/info/std68>.
               At the time of writing, this STD comprises the following:
@@ -411,6 +458,15 @@ Internet-Draft         EDN Application Extensions             April 2026
               Specifications: ABNF", STD 68, RFC 5234,
               DOI 10.17487/RFC5234, January 2008,
               <https://www.rfc-editor.org/info/rfc5234>.
+
+   [STD94]    Internet Standard 94,
+              <https://www.rfc-editor.org/info/std94>.
+              At the time of writing, this STD comprises the following:
+
+              Bormann, C. and P. Hoffman, "Concise Binary Object
+              Representation (CBOR)", STD 94, RFC 8949,
+              DOI 10.17487/RFC8949, December 2020,
+              <https://www.rfc-editor.org/info/rfc8949>.
 
 6.2.  Informative References
 
@@ -445,4 +501,4 @@ Author's Address
 
 
 
-Bormann                  Expires 12 October 2026                [Page 8]
+Bormann                  Expires 17 October 2026                [Page 9]
