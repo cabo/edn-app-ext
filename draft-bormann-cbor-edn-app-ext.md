@@ -33,6 +33,7 @@ normative:
   I-D.ietf-cbor-edn-literals: edn
   IANA.cbor-diagnostic-notation: iana-edn
   STD68: abnf # RFC5234
+  STD94: cbor # RFC8949
   RFC7405: abnf2
   RFC4648: base
   I-D.josefsson-rfc4648bis: basebis
@@ -108,6 +109,19 @@ of the case-sensitive extensions defined in {{RFC7405}}.
 Application Extensions
 =================
 
+A table like Table 6 in {{-edn}}:
+(Add text.)
+
+| app-prefix | content of single-quoted string                  | result type                         |
+|------------+--------------------------------------------------+-------------------------------------|
+| same       | sequence of one or more data items               | data item                           |
+| SAME       | (not used)                                       |                                     |
+| bytes      | byte or text string(s)                           | byte string with concatenated bytes |
+| BYTES      | (not used)                                       |                                     |
+| float      | byte string (usually hex-encoded as text string) | floating point value                |
+| FLOAT      | (not used)                                       |                                     |
+{: #tab-prefixes title="App-prefix Values Defined in this Document"}
+
 ## same: multiple literals to be checked against each other
 
 The "`same`" application extension receives a sequence of one or more
@@ -153,11 +167,18 @@ $ edn-abnf -abytes -e 'bytes<<"ä", h'"'2f'"'>>' | diag2diag.rb -tu
 ## float: IEEE754-oriented literals for more floating point values
 
 The "`float`" application extension enables the notation of 2-byte,
-4-byte, and 8-byte byte strings as hex literals (like the `h`
-application prefix).
-The application-oriented literal is interpreted as an encoded data item
-prefixing the byte string by a single byte 0xF9 (binary16), 0xFA
-(binary32), and 0xFB (binary64), respectively, would be.
+4-byte, and 8-byte byte strings to express floating point values
+(mt=7, ai=25/26/27 respectively) by giving their IEEE 754
+representation.
+A text string used as an argument is interpreted exactly as a hex
+literal (like the `h` application prefix); the result is used as the
+byte string.
+
+The application-oriented literal is interpreted as an encoded data
+item would be that prefixes the byte string by a single byte 0xF9
+(2 bytes, i.e., binary16), 0xFA (4 bytes, i.e., binary32), and 0xFB (8
+bytes, i.e., binary64), respectively.
+Byte strings of a different length than 2, 4, or 8 raise an error.
 
 Example:
 
@@ -166,10 +187,19 @@ $ edn-abnf -afloat -e "[float'fe00', float'47110815']" -tpretty
 82             # array(2)
    F9 FE00     # primitive(65024)
    FA 47110815 # primitive(1192298517)
-$ edn-abnf -afloat,same -e "same<< float'47110815', 37128.08203125 >>"
+$ edn-abnf -afloat,same -e "same<< float'47110815', 0x1.22102ap+15 >>"
 37128.08203125
 ~~~
 {: post="fold"}
+
+The purpose of this application extension is to close a gap in EDN's
+{{IEEE754}} binary64 support:
+Without this (or a similar) extension there is no way to represent NaN
+values different from the one called out at the end of {{Section 4.1 of
+RFC8949@-cbor}}: "(for many applications, the single NaN encoding
+0xf97e00 will suffice)".
+For finite floating point numbers, the decimal or hex floating point
+representations are preferred.
 
 ## tbd b32/h32/c32?: Create byte string from base32 representation
 
@@ -214,6 +244,8 @@ IANA considerations
 [^todo]
 
 --- back
+
+{::include-all lists.md}
 
 Acknowledgements
 ================
