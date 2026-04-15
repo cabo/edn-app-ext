@@ -19,6 +19,7 @@
 Gemfile.lock
 archive.json
 draft-bormann-cbor-edn-app-ext.xml
+draft-bormann-cbor-edn-app-ext.v2v3.xml
 package-lock.json
 report.xml
 !requirements.txt
