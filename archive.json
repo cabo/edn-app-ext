@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-06-16T04:59:26.743953+00:00",
+  "timestamp": "2026-06-18T04:27:09.977610+00:00",
   "repo": "cabo/edn-app-ext",
   "labels": [
     {
@@ -49,6 +49,23 @@
       "color": "ffffff"
     }
   ],
-  "issues": [],
+  "issues": [
+    {
+      "number": 1,
+      "id": "I_kwDOR-3ohM8AAAABFszOqQ",
+      "title": "Encoded CoAP options-and-payload",
+      "url": "https://github.com/cabo/edn-app-ext/issues/1",
+      "state": "OPEN",
+      "author": "chrysn",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "Here's a one I could have used right now. Not sure it fits the style of this document: If so, I can write it up; if not, I'll spin it into an own one (or just the docs of the tool that'll use it and go directly to IANA; what this needs is some eyes from CoRE or CBOR, but not IETF consensus).\n\nI'd like to use it with CBOR based debugging, especially because [Rust debugging tools have a way of dumping CBOR easily as EDN](https://github.com/knurling-rs/defmt/pull/916). (It's useful for describing tests, so it's not just the defmt use case).\n\n```\ncoap<<{\n    // Options can be single-valued or arrays for repeated options:\n    11: [\".well-known\", \"core\"],\n    // Just as the text strings above go through the \"string\" formatting,\n    // numbers go through uint:\n    12: 40\n    // Null conveniently sorts after the numbers (but who'd ever use\n    // the inner part in CBOR; on the wire it's just CoAP anyway)\n    null: b\"</hello>\"\n    // (This is way more fun with CBOR based content formats:\n    // they just go <<>>)\n}>>\n```\n\n(With a to-be-requested tag for COAP)\n\nThere's some space to explore like `e'Content-Format'` instead of 11, or doing map-key there implicitly, and probably some other improvement plus some more bikeshedding points. Could also have the CoAP code in somewhere, but as that is usually not colocated with the options-and-payload, I'd usually not send it in the same byte string (but maybe in a two-element form of the tag).",
+      "createdAt": "2026-06-16T20:01:53Z",
+      "updatedAt": "2026-06-16T20:01:53Z",
+      "closedAt": null,
+      "comments": []
+    }
+  ],
   "pulls": []
 }
